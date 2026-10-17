@@ -26,7 +26,58 @@ function run(bin, args) {
  * @param {'video'|'audio'} kind
  * @param {{baseDir: string, maxBytes: number, cookiesFile?: string}} opts
  */
-export async function download(url, kind, { baseDir, maxBytes, cookiesFile }) {
+export async function download(url, kind, opts) {
+  try {
+    return await downloadMedia(url, kind, opts);
+  } catch (e) {
+    // Video topilmasa (masalan, Pinterest'dagi rasm pin), asl rasmni yuklab olamiz
+    if (kind === 'video' && e instanceof DownloadError && !(e instanceof FileTooLarge)) {
+      const img = await downloadImage(url, opts).catch(() => null);
+      if (img) return img;
+    }
+    throw e;
+  }
+}
+
+/** Sahifadagi eng katta rasmni (thumbnail) yuklab oladi. Topilmasa null. */
+async function downloadImage(url, { baseDir, maxBytes, cookiesFile }) {
+  const args = [url, '-J', '--no-playlist', '--no-warnings', '--ignore-no-formats-error'];
+  if (cookiesFile) args.push('--cookies', cookiesFile);
+  const { code, out } = await run(ytdlpPath, args);
+  if (code !== 0) return null;
+  let info;
+  try {
+    info = JSON.parse(out);
+  } catch {
+    return null;
+  }
+  if (info.formats?.length) return null; // video bor ekan, demak boshqa sabab bilan yiqilgan
+  const thumbs = (info.thumbnails || []).filter((t) => t.url);
+  if (!thumbs.length) return null;
+  const best =
+    thumbs.find((t) => /\/originals\//.test(t.url)) ||
+    thumbs.reduce((a, b) => ((b.width || 0) * (b.height || 0) > (a.width || 0) * (a.height || 0) ? b : a));
+
+  const res = await fetch(best.url, { headers: { 'User-Agent': 'Mozilla/5.0' } });
+  if (!res.ok) return null;
+  const buf = Buffer.from(await res.arrayBuffer());
+  if (buf.length > maxBytes) throw new FileTooLarge('Rasm katta');
+
+  const ext = (new URL(best.url).pathname.match(/\.(jpe?g|png|webp|gif)$/i)?.[1] || 'jpg').toLowerCase();
+  const workdir = path.join(baseDir, crypto.randomUUID());
+  fs.mkdirSync(workdir, { recursive: true });
+  const file = path.join(workdir, `image.${ext}`);
+  fs.writeFileSync(file, buf);
+  return {
+    path: file,
+    dir: workdir,
+    title: info.title || info.description || 'rasm',
+    duration: undefined,
+    kind: ext === 'gif' ? 'animation' : 'photo',
+  };
+}
+
+async function downloadMedia(url, kind, { baseDir, maxBytes, cookiesFile }) {
   const workdir = path.join(baseDir, crypto.randomUUID());
   fs.mkdirSync(workdir, { recursive: true });
   const maxMb = Math.floor(maxBytes / 1024 / 1024);

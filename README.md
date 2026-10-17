@@ -20,6 +20,10 @@ Hech narsani qo'lda o'rnatish shart emas: yt-dlp va ffmpeg birinchi ishga tushis
 
 ## Imkoniyatlar
 - Havolani yuborasiz → **🎬 Video** yoki **🎵 Audio (MP3)** tugmasini tanlaysiz
+- **Ko'p havola birdaniga:** bitta xabarda yoki ketma-ket bir nechta xabarda (masalan, "[1/2]", "[2/2]") yuborilgan
+  barcha havolalar yig'iladi va **🎬 Hammasini video (N)** tugmasi bilan navbat bilan yuklanadi.
+  Takroriy havolalar olib tashlanadi, oxirida nechtasi yuklangani va xato bo'lganlari ro'yxati chiqadi.
+- **Pinterest rasm pinlari:** pinda video bo'lmasa, asl o'lchamdagi rasm yuboriladi
 - Video Telegram'da to'g'ridan-to'g'ri ochiladigan MP4 (720p gacha)
 - Bir vaqtda 3 ta yuklash, vaqtinchalik fayllar avtomatik o'chiriladi
 - yt-dlp har ishga tushishda o'zini yangilaydi
