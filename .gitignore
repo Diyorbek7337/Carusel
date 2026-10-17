@@ -1,7 +1,5 @@
+node_modules/
 .env
-__pycache__/
-*.pyc
 downloads/
-.venv/
-venv/
+bin/
 cookies.txt
