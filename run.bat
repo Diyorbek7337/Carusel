@@ -18,7 +18,7 @@ if not defined PY (
   echo.
   echo [X] Mos Python topilmadi. Python 3.13 kerak.
   echo     Yuklab olish: https://www.python.org/downloads/windows/
-  echo     Ro'yxatdan eng yangi "Python 3.13.x" ni toping va "Windows installer ^(64-bit^)" ni yuklang.
+  echo     Ro'yxatdan eng yangi "Python 3.13.x" ni toping va "Windows installer (64-bit)" ni yuklang.
   echo     O'rnatishda "Add python.exe to PATH" belgisini qo'ying.
   echo     Python 3.15 ni o'chirish shart emas - bot 3.13 ni o'zi topadi.
   echo.
