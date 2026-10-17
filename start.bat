@@ -20,14 +20,12 @@ if not exist .env (
   notepad .env
 )
 
-if not exist node_modules (
-  echo Kutubxonalar o'rnatilmoqda, biroz kuting...
-  call npm install --no-fund --no-audit
-  if errorlevel 1 (
-    echo [X] npm install xato berdi. Yuqoridagi xatoni rasmga olib yuboring.
-    pause
-    exit /b 1
-  )
+echo Kutubxonalar tekshirilmoqda...
+call npm install --no-fund --no-audit
+if errorlevel 1 (
+  echo [X] npm install xato berdi. Yuqoridagi xatoni rasmga olib yuboring.
+  pause
+  exit /b 1
 )
 
 node src/index.js

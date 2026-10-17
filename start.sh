@@ -4,5 +4,5 @@ set -e
 cd "$(dirname "$0")"
 command -v node >/dev/null || { echo "Node.js o'rnating: https://nodejs.org"; exit 1; }
 [ -f .env ] || { cp .env.example .env; echo ".env yaratildi — BOT_TOKEN ni yozing va qayta ishga tushiring."; exit 1; }
-[ -d node_modules ] || npm install --no-fund --no-audit
+npm install --no-fund --no-audit
 exec node src/index.js
