@@ -18,7 +18,7 @@ video yoki audio (MP3) yuklab beruvchi Telegram bot. Ichida [yt-dlp](https://git
    ```
 
 ### Windows (Docker'siz, eng oson yo'l)
-1. [Python](https://www.python.org/downloads/) o'rnating — o'rnatishda **"Add python.exe to PATH"** belgisini qo'ying.
+1. [Python 3.13](https://www.python.org/downloads/windows/) o'rnating (3.15 hali mos emas) — o'rnatishda **"Add python.exe to PATH"** belgisini qo'ying.
 2. `run.bat` faylini ikki marta bosing. Birinchi marta Notepad ochiladi — `BOT_TOKEN` ni yozib saqlang.
 
 Bot kompyuter yoniq va oyna ochiq turganda ishlaydi.
