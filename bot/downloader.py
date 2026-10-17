@@ -1,11 +1,40 @@
 """yt-dlp ustidagi yupqa qatlam: video yoki audio yuklab oladi."""
 import asyncio
+import logging
+import os
 import shutil
+import sys
 import uuid
 from dataclasses import dataclass
 from pathlib import Path
 
 import yt_dlp
+
+
+log = logging.getLogger(__name__)
+
+
+def find_ffmpeg_dir(cache_dir: Path) -> str | None:
+    """Tizimdagi ffmpeg'ni topadi, bo'lmasa imageio-ffmpeg paketidagisini ishlatadi.
+
+    yt-dlp faylni "ffmpeg" nomi bilan qidiradi, imageio esa boshqa nom bilan saqlaydi,
+    shuning uchun uni alohida papkaga "ffmpeg(.exe)" nomi bilan nusxalaymiz.
+    """
+    if shutil.which("ffmpeg"):
+        return None  # PATH'da bor, yt-dlp o'zi topadi
+    try:
+        import imageio_ffmpeg
+    except ImportError:
+        log.warning("ffmpeg topilmadi: video+audio birlashtirish va MP3 ishlamasligi mumkin")
+        return None
+    src = Path(imageio_ffmpeg.get_ffmpeg_exe())
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    dst = cache_dir / ("ffmpeg.exe" if sys.platform == "win32" else "ffmpeg")
+    if not dst.exists() or dst.stat().st_size != src.stat().st_size:
+        shutil.copy2(src, dst)
+        os.chmod(dst, 0o755)
+    log.info("ffmpeg: %s", dst)
+    return str(cache_dir)
 
 
 class DownloadError(Exception):
@@ -29,6 +58,7 @@ class Downloader:
         self.base_dir = base_dir
         self.max_bytes = max_bytes
         self.cookies_file = cookies_file
+        self.ffmpeg_dir = find_ffmpeg_dir(base_dir / ".ffmpeg")
 
     def _opts(self, workdir: Path, kind: str) -> dict:
         max_mb = self.max_bytes // (1024 * 1024)
@@ -42,6 +72,8 @@ class Downloader:
             "socket_timeout": 30,
             "retries": 3,
         }
+        if self.ffmpeg_dir:
+            opts["ffmpeg_location"] = self.ffmpeg_dir
         if self.cookies_file:
             opts["cookiefile"] = self.cookies_file
         if kind == "audio":

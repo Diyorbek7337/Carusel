@@ -10,14 +10,6 @@ if errorlevel 1 (
   exit /b 1
 )
 
-where ffmpeg >nul 2>nul
-if errorlevel 1 (
-  echo [!] ffmpeg topilmadi. O'rnatish: winget install Gyan.FFmpeg
-  echo     Keyin bu oynani yopib, run.bat ni qayta ishga tushiring.
-  pause
-  exit /b 1
-)
-
 if not exist .env (
   copy .env.example .env >nul
   echo [!] .env fayli yaratildi. Uni Notepad'da ochib BOT_TOKEN ni yozing va saqlang.
