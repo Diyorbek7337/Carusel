@@ -6,6 +6,21 @@ import ffmpegPath from 'ffmpeg-static';
 import { ytdlpPath } from './ytdlp.js';
 
 export class DownloadError extends Error {}
+
+// YouTube uchun yt-dlp'ga JavaScript dvigateli kerak. Sukut bo'yicha u faqat "deno"ni qidiradi,
+// biz esa botni ishga tushirgan Node.js'ning o'zini beramiz.
+const baseArgs = ['--no-warnings', '--js-runtimes', `node:${process.execPath}`];
+
+// Bu xatolar "sahifada video yo'q" degani (masalan, Pinterest'dagi rasm pin)
+const NO_VIDEO_RE = /No video formats found|Requested format is not available/i;
+const isYouTube = (url) => /(^|\.)(youtube\.com|youtu\.be)$/i.test(safeHost(url));
+function safeHost(url) {
+  try {
+    return new URL(url).hostname;
+  } catch {
+    return '';
+  }
+}
 export class FileTooLarge extends DownloadError {}
 
 function run(bin, args) {
@@ -31,7 +46,13 @@ export async function download(url, kind, opts) {
     return await downloadMedia(url, kind, opts);
   } catch (e) {
     // Video topilmasa (masalan, Pinterest'dagi rasm pin), asl rasmni yuklab olamiz
-    if (kind === 'video' && e instanceof DownloadError && !(e instanceof FileTooLarge)) {
+    if (
+      kind === 'video' &&
+      e instanceof DownloadError &&
+      !(e instanceof FileTooLarge) &&
+      NO_VIDEO_RE.test(e.message) &&
+      !isYouTube(url)
+    ) {
       const img = await downloadImage(url, opts).catch(() => null);
       if (img) return img;
     }
@@ -41,7 +62,7 @@ export async function download(url, kind, opts) {
 
 /** Sahifadagi eng katta rasmni (thumbnail) yuklab oladi. Topilmasa null. */
 async function downloadImage(url, { baseDir, maxBytes, cookiesFile }) {
-  const args = [url, '-J', '--no-playlist', '--no-warnings', '--ignore-no-formats-error'];
+  const args = [url, ...baseArgs, '-J', '--no-playlist', '--ignore-no-formats-error'];
   if (cookiesFile) args.push('--cookies', cookiesFile);
   const { code, out } = await run(ytdlpPath, args);
   if (code !== 0) return null;
@@ -84,8 +105,8 @@ async function downloadMedia(url, kind, { baseDir, maxBytes, cookiesFile }) {
 
   const args = [
     url,
+    ...baseArgs,
     '--no-playlist',
-    '--no-warnings',
     '--max-filesize', `${maxMb}M`,
     '--retries', '3',
     '--socket-timeout', '30',
